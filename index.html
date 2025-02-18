@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TagTuber - Free YouTube Tag Generator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #fff; /* Changed background to white */
+            color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: #f8f8f8;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #ff0000;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            outline: none;
+            margin-bottom: 15px;
+        }
+
+        .generate-btn, .copy-btn {
+            background: #ff0000;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+            width: 100%;
+        }
+
+        .generate-btn:hover, .copy-btn:hover {
+            background: #cc0000;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .tag {
+            background: #ddd;
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin: 5px;
+            font-size: 14px;
+        }
+
+        .copy-btn {
+            margin-top: 10px;
+            display: none;
+        }
+
+        .loading {
+            margin-top: 10px;
+            color: #555;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 TagTuber</h1>
+        <input type="text" id="videoTitle" placeholder="Enter video topic (e.g., 'photography tips')">
+        <button class="generate-btn" onclick="generateTags()">Generate Tags</button>
+        <p class="loading" id="loading">🔍 Fetching tags...</p>
+        <div class="tags-container" id="tagsContainer"></div>
+        <button class="copy-btn" id="copyButton" onclick="copyAllTags()">📋 Copy Tags</button>
+    </div>
+
+    <script>
+        function fetchYouTubeSuggestions(query, callback) {
+            const script = document.createElement('script');
+            script.src = `https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(query)}&callback=${callback}`;
+            document.body.appendChild(script);
+        }
+
+        function handleYouTubeSuggestions(data) {
+            document.getElementById('loading').style.display = 'none';
+
+            if (!data || !data[1]) {
+                alert("No tags found. Try a different topic.");
+                return;
+            }
+
+            const tags = data[1].slice(0, 15);
+            displayTags(tags);
+        }
+
+        function generateTags() {
+            const query = document.getElementById('videoTitle').value.trim();
+            if (!query) {
+                alert("Please enter a video topic.");
+                return;
+            }
+
+            document.getElementById('loading').style.display = 'block';
+            fetchYouTubeSuggestions(query, 'handleYouTubeSuggestions');
+        }
+
+        function displayTags(tags) {
+            const container = document.getElementById('tagsContainer');
+            container.innerHTML = tags.map(tag => `<div class="tag">${tag}</div>`).join('');
+
+            const copyButton = document.getElementById('copyButton');
+            copyButton.style.display = tags.length ? 'block' : 'none';
+        }
+
+        function copyAllTags() {
+            const tags = [...document.querySelectorAll('.tag')].map(tag => tag.textContent).join(', ');
+            navigator.clipboard.writeText(tags).then(() => {
+                alert("Tags copied to clipboard!");
+            }).catch(err => {
+                console.error('Failed to copy tags:', err);
+            });
+        }
+    </script>
+</body>
+</html>
