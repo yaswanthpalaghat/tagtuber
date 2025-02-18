@@ -103,50 +103,78 @@
 
     <script>
         function fetchYouTubeSuggestions(query, callback) {
-            const script = document.createElement('script');
-            script.src = `https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(query)}&callback=${callback}`;
-            document.body.appendChild(script);
+    const script = document.createElement('script');
+    script.src = `https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(query)}&callback=${callback}`;
+    document.body.appendChild(script);
+}
+
+function handleYouTubeSuggestions(data) {
+    document.getElementById('loading').style.display = 'none';
+
+    if (!data || !data[1]) {
+        alert("No tags found. Try a different topic.");
+        return;
+    }
+
+    let tags = data[1].slice(0, 20); // Fetching more tags
+    tags = expandTags(tags);
+
+    let tagString = tags.join(', ');
+
+    if (tagString.length < 450) {
+        let fillerTags = ["viral", "trending", "2024", "tutorial", "how to", "best", "top", "guide", "step by step", "tips", "explained"];
+        while (tagString.length < 450 && fillerTags.length) {
+            tags.push(fillerTags.shift());
+            tagString = tags.join(', ');
         }
+    }
 
-        function handleYouTubeSuggestions(data) {
-            document.getElementById('loading').style.display = 'none';
+    displayTags(tags);
+}
 
-            if (!data || !data[1]) {
-                alert("No tags found. Try a different topic.");
-                return;
-            }
+function expandTags(tags) {
+    let variations = ["best", "top", "guide", "tips", "tutorial", "how to", "for beginners", "explained", "step by step"];
+    let extendedTags = [];
 
-            const tags = data[1].slice(0, 15);
-            displayTags(tags);
+    tags.forEach(tag => {
+        extendedTags.push(tag);
+        if (extendedTags.length < 30) {
+            let randomVariation = variations[Math.floor(Math.random() * variations.length)];
+            extendedTags.push(`${tag} ${randomVariation}`);
         }
+    });
 
-        function generateTags() {
-            const query = document.getElementById('videoTitle').value.trim();
-            if (!query) {
-                alert("Please enter a video topic.");
-                return;
-            }
+    return extendedTags.slice(0, 30);
+}
 
-            document.getElementById('loading').style.display = 'block';
-            fetchYouTubeSuggestions(query, 'handleYouTubeSuggestions');
-        }
+function generateTags() {
+    const query = document.getElementById('videoTitle').value.trim();
+    if (!query) {
+        alert("Please enter a video topic.");
+        return;
+    }
 
-        function displayTags(tags) {
-            const container = document.getElementById('tagsContainer');
-            container.innerHTML = tags.map(tag => `<div class="tag">${tag}</div>`).join('');
+    document.getElementById('loading').style.display = 'block';
+    fetchYouTubeSuggestions(query, 'handleYouTubeSuggestions');
+}
 
-            const copyButton = document.getElementById('copyButton');
-            copyButton.style.display = tags.length ? 'block' : 'none';
-        }
+function displayTags(tags) {
+    const container = document.getElementById('tagsContainer');
+    container.innerHTML = tags.map(tag => `<div class="tag">${tag}</div>`).join('');
 
-        function copyAllTags() {
-            const tags = [...document.querySelectorAll('.tag')].map(tag => tag.textContent).join(', ');
-            navigator.clipboard.writeText(tags).then(() => {
-                alert("Tags copied to clipboard!");
-            }).catch(err => {
-                console.error('Failed to copy tags:', err);
-            });
-        }
+    const copyButton = document.getElementById('copyButton');
+    copyButton.style.display = tags.length ? 'block' : 'none';
+}
+
+function copyAllTags() {
+    const tags = [...document.querySelectorAll('.tag')].map(tag => tag.textContent).join(', ');
+    navigator.clipboard.writeText(tags).then(() => {
+        alert("Tags copied to clipboard!");
+    }).catch(err => {
+        console.error('Failed to copy tags:', err);
+    });
+}
+
     </script>
 </body>
 </html>
